@@ -11,9 +11,15 @@ function History() {
   useEffect(() => {
     const fetchHistory = async (userId) => {
       setLoading(true);
-      const chatHistory = await getChatHistory(userId);
-      setHistory(chatHistory);
-      setLoading(false);
+      try {
+        const chatHistory = await getChatHistory(userId);
+        setHistory(chatHistory);
+      } catch (error) {
+        console.error("Error fetching history:", error);
+        setHistory([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     const unsubscribe = auth.onAuthStateChanged((user) => {

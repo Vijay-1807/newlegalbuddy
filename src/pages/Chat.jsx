@@ -135,6 +135,19 @@ function Chat() {
         body: JSON.stringify({ message: input }),
       });
 
+      if (!res.ok) {
+        // Try to get error message from response
+        let errorMessage = "Could not reach the server.";
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.error || errorMessage;
+          console.error("Backend error:", errorData);
+        } catch (e) {
+          console.error("Failed to parse error response:", e);
+        }
+        throw new Error(errorMessage);
+      }
+
       const data = await res.json();
       const botReply = data.response || "Sorry, I couldn't get a response.";
       const newBotMessage = {
@@ -151,9 +164,10 @@ function Chat() {
         newBotMessage,
       ]);
     } catch (err) {
+      console.error("Chat error:", err);
       setMessages((prev) => [
         ...prev.slice(0, -1),
-        { id: Date.now() + 1, from: "bot", text: "Error: Could not reach the server." },
+        { id: Date.now() + 1, from: "bot", text: `Error: ${err.message || "Could not reach the server."}` },
       ]);
     }
   };
@@ -234,7 +248,16 @@ function Chat() {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to transform text.");
+        // Try to get error message from response
+        let errorMessage = "Failed to transform text.";
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.error || errorMessage;
+          console.error("Backend error:", errorData);
+        } catch (e) {
+          console.error("Failed to parse error response:", e);
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();
@@ -252,9 +275,15 @@ function Chat() {
 
     } catch (err) {
       console.error("Text transformation error:", err);
-      // Revert on error
+      // Show error message to user
       setMessages(prev => prev.map(msg =>
-        msg.id === messageId ? { ...msg, isProcessing: false } : msg
+        msg.id === messageId 
+          ? { 
+              ...msg, 
+              isProcessing: false,
+              text: `Error: ${err.message || "Failed to transform text"}` 
+            } 
+          : msg
       ));
     }
   };

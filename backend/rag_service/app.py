@@ -11,7 +11,10 @@ app = Flask(__name__)
 # This will load data and build the FAISS index on startup.
 try:
     logging.info("Initializing RAG Core...")
-    rag_core = RAGCore(data_path='backend/rag_service/ipc_sections.json')
+    # Use relative path since we're running from rag_service directory
+    import os
+    data_path = os.path.join(os.path.dirname(__file__), 'ipc_sections.json')
+    rag_core = RAGCore(data_path=data_path)
     logging.info("RAG Core initialized successfully.")
 except Exception as e:
     logging.error(f"Failed to initialize RAG Core: {e}")

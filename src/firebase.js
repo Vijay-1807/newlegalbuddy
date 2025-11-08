@@ -3,7 +3,12 @@ import { getAuth, GoogleAuthProvider, GithubAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore"; // 🔥 Add this
 
 const firebaseConfig = {
-YOUR _PROJECT_ID: "your-project-id",
+  apiKey: "AIzaSyAHBGoclydfiKPzKqKdWfmoP-HvxPqlZu4",
+  authDomain: "legalbuddy-1215d.firebaseapp.com",
+  projectId: "legalbuddy-1215d",
+  storageBucket: "legalbuddy-1215d.firebasestorage.app",
+  messagingSenderId: "223107859574",
+  appId: "1:223107859574:web:a7c445a7989a86d75a0b57"
 };
 
 const app = initializeApp(firebaseConfig);

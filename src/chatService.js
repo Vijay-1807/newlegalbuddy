@@ -17,12 +17,37 @@ export const saveChatMessage = async (userId, message, sender = "user") => {
 };
 
 export const getChatHistory = async (userId) => {
-  const chatsRef = collection(db, "chats");
-  const q = query(chatsRef, where("userId", "==", userId), orderBy("timestamp"));
-  const querySnapshot = await getDocs(q);
-  const chats = [];
-  querySnapshot.forEach((doc) => {
-    chats.push(doc.data());
-  });
-  return chats;
+  try {
+    const chatsRef = collection(db, "chats");
+    // Try with orderBy first, fallback to without if index doesn't exist
+    let q = query(chatsRef, where("userId", "==", userId), orderBy("timestamp", "desc"));
+    let querySnapshot;
+    try {
+      querySnapshot = await getDocs(q);
+    } catch (indexError) {
+      // If index error, try without orderBy
+      console.warn("Index not found, fetching without orderBy:", indexError);
+      q = query(chatsRef, where("userId", "==", userId));
+      querySnapshot = await getDocs(q);
+    }
+    
+    const chats = [];
+    querySnapshot.forEach((doc) => {
+      chats.push({ id: doc.id, ...doc.data() });
+    });
+    
+    // Sort manually if we couldn't use orderBy
+    chats.sort((a, b) => {
+      if (!a.timestamp || !b.timestamp) return 0;
+      const aTime = a.timestamp.seconds || 0;
+      const bTime = b.timestamp.seconds || 0;
+      return bTime - aTime; // Descending order (newest first)
+    });
+    
+    return chats;
+  } catch (error) {
+    console.error("Error fetching chat history:", error);
+    // Return empty array on error instead of throwing
+    return [];
+  }
 };
